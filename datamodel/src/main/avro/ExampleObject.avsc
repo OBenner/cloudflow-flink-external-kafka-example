@@ -1,0 +1,13 @@
+{
+    "namespace": "ru.omyagkov",
+    "type": "record",
+    "name": "ExampleObject",
+    "doc": "Some object for example",
+    "fields": [
+        {
+            "name": "field",
+            "type": "string",
+            "doc": "some field"
+        }
+    ]
+}

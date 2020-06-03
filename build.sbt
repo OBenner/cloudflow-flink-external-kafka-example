@@ -11,7 +11,15 @@ lazy val root = Project(id = appName, base = file("."))
   )
   .aggregate(
     pipeline,
+    datamodel,
     flinkStreamletExternalKafka
+  )
+lazy val datamodel = appModule("datamodel")
+  .enablePlugins(CloudflowLibraryPlugin)
+  .settings(
+    // Add this for suppress warnings about generated case classes from avro schemas with unused imports
+    Settings.suppressWarnSettings,
+    (sourceGenerators in Compile) += (avroScalaGenerateSpecific in Test).taskValue
   )
 
 lazy val pipeline = appModule("pipeline")
@@ -23,7 +31,8 @@ lazy val pipeline = appModule("pipeline")
     libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind"    % "2.11.0"  // for success embedded kafka start
   )
   .dependsOn(
-    flinkStreamletExternalKafka
+    flinkStreamletExternalKafka,
+    flinkStreamletProcess
   )
 
 lazy val flinkStreamletExternalKafka = appModule("flink-streamlet-external-kafka")
@@ -33,7 +42,18 @@ lazy val flinkStreamletExternalKafka = appModule("flink-streamlet-external-kafka
     libraryDependencies ++= Dependencies.Testing.TestingDependencies,
     libraryDependencies ++= Dependencies.Hadoop.HadoopDependencies
   )
-  .dependsOn()
+  .dependsOn(datamodel)
+
+
+lazy val flinkStreamletProcess = appModule("flink-process")
+  .enablePlugins(CloudflowFlinkLibraryPlugin)
+  .settings(
+    libraryDependencies ++= Dependencies.FlinkUtils.FlinkUtilsDependencies,
+    libraryDependencies ++= Dependencies.Testing.TestingDependencies,
+    libraryDependencies ++= Dependencies.Hadoop.HadoopDependencies
+  )
+  .dependsOn(datamodel)
+
 def appModule(moduleID: String): Project = {
   Project(id = moduleID, base = file(moduleID))
     .settings(name := moduleID)

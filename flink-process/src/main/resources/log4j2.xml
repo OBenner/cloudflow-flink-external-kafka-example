@@ -1,0 +1,20 @@
+<Configuration status="FATAL">
+    <Appenders>
+        <Console name="STDOUT">
+            <PatternLayout>
+                <Pattern>%d{yyyy-MM-dd'T'HH:mm:ss.SSS'Z'}{GMT+0} %highlight{%level} %logger [%mdc] - %msg%n</Pattern>
+            </PatternLayout>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Logger name="akka" level="WARN"/>
+        <logger name="akka.actor.ActorSystemImpl" level="WARN"/>
+        <logger name="org.apache.flink" level="WARN"/>
+        <logger name="org.apache.hadoop" level="WARN"/>
+
+        <AsyncRoot level="DEBUG">
+            <AppenderRef ref="STDOUT"/>
+        </AsyncRoot>
+    </Loggers>
+</Configuration>
