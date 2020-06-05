@@ -92,9 +92,9 @@ trait KafkaConfig {
   protected def setKafkaProducerProperty(kafkaServer: String): Properties = {
     val props = new Properties()
     props.setProperty("bootstrap.servers", kafkaServer)
-    props.put("enable.idempotence", "true")
+    props.setProperty("enable.idempotence", "true")
    // props.put("transactional.id", "r1")
-    props.put("transaction.timeout.ms", "150")
+    props.setProperty("transaction.timeout.ms", "900000")
     props
   }
 }
