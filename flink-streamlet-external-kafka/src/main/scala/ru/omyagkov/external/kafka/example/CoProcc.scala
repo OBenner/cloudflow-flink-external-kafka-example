@@ -27,7 +27,8 @@ class CoProcc
     out: Collector[ExampleObject]
   ): Unit = {
     state.put("1", null)
-    state.get("2").field
+   val value = state.get("2")
+    println(value.field)
     out.collect(value)
   }
 
@@ -37,7 +38,8 @@ class CoProcc
     out: Collector[ExampleObject]
   ): Unit = {
     state.put("1", null)
-    state.get("2").field
+    val value = state.get("2")
+    println(value.field)
     out.collect(value)
   }
 }
