@@ -28,27 +28,48 @@ class FlinkStreamletExample extends FlinkStreamlet with KafkaConfig {
         val streamEnv = context.env
         streamEnv.setParallelism(1)
 
-        val externalStreamIn = streamEnv.addSource(
-          new FlinkKafkaConsumer[String](
-            "topic",
-            new SimpleStringSchema(),
-            setKafkaConsumerProperty(
-              context.streamletConfig.getString(kafkaBootstrapServers.key),
-              context.streamletConfig.getString(kafkaConsumerGroupId.key)
+        val externalStream = streamEnv
+          .addSource(
+            new FlinkKafkaConsumer[String](
+              "topic",
+              new SimpleStringSchema(),
+              setKafkaConsumerProperty(
+                context.streamletConfig.getString(kafkaBootstrapServers.key),
+                context.streamletConfig.getString(kafkaConsumerGroupId.key)
+              )
             )
           )
-        ).map(
-          obj =>
+          .map(obj => new ExampleObject(obj))
 
-            new ExampleObject(obj)
-        )
+        streamEnv
+          .fromElements(ExampleObject("one"), ExampleObject("two"))
+          .addSink(
+            flinkKafkaProducerSource[ExampleObject](
+              setKafkaProducerProperty(
+                context.streamletConfig.getString(kafkaBootstrapServers.key)
+              ),
+              context.streamletConfig.getString(kafkaTopicProducer.key)
+            )
+          )
 
-        val generate =
-          streamEnv.fromElements(ExampleObject("one"), ExampleObject("two"))
-        //  generate.print("to producer")
+
+
+        val externalStreamIn: DataStream[ExampleObject] = streamEnv
+          .addSource(
+            flinkKafkaConsumerSource[ExampleObject](
+              setKafkaConsumerProperty(
+                context.streamletConfig.getString(kafkaBootstrapServers.key),
+                context.streamletConfig.getString(kafkaConsumerGroupId.key)
+              ),
+              context.streamletConfig.getString(kafkaTopicConsumer.key),
+              context.streamletConfig
+                .getBoolean(enableStartFromEarliestKafkaPosition.key)
+            )
+          )
+
         externalStreamIn
-          .connect(generate)
-          .process(new Coprocc())
+          .connect(externalStream)
+          .process(new CoProcc())
           .addSink(
             flinkKafkaProducerSource[ExampleObject](
               setKafkaProducerProperty(

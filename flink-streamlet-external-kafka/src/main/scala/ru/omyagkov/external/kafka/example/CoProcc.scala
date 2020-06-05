@@ -7,7 +7,7 @@ import org.apache.flink.util.Collector
 import ru.omyagkov.ExampleObject
 import org.apache.flink.api.scala.createTypeInformation
 
-class Coprocc
+class CoProcc
     extends CoProcessFunction[ExampleObject, ExampleObject, ExampleObject] {
   private lazy val stateDescriptor: MapStateDescriptor[String, ExampleObject] =
     new MapStateDescriptor[String, ExampleObject](
@@ -27,7 +27,7 @@ class Coprocc
     out: Collector[ExampleObject]
   ): Unit = {
     state.put("1", null)
-    state.get("2")
+    state.get("2").field
     out.collect(value)
   }
 
@@ -37,7 +37,7 @@ class Coprocc
     out: Collector[ExampleObject]
   ): Unit = {
     state.put("1", null)
-    state.get("2")
+    state.get("2").field
     out.collect(value)
   }
 }
