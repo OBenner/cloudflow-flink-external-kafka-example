@@ -57,5 +57,5 @@ lazy val flinkStreamletProcess = appModule("flink-process")
 def appModule(moduleID: String): Project = {
   Project(id = moduleID, base = file(moduleID))
     .settings(name := moduleID)
-    .settings(Settings.commonSettings, libraryDependencies ++= Dependencies.Logging.LoggingDependencies)
+    .settings( libraryDependencies ++= Dependencies.Logging.LoggingDependencies)
 }

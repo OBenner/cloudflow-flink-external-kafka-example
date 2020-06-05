@@ -5,7 +5,9 @@ import cloudflow.flink.{FlinkStreamlet, FlinkStreamletLogic}
 import cloudflow.streamlets.{ConfigParameter, StreamletShape}
 import cloudflow.streamlets.avro.AvroOutlet
 import org.apache.flink.api.common.serialization.SimpleStringSchema
+import org.apache.flink.streaming.api.functions.co.CoProcessFunction
 import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer
+import org.apache.flink.util.Collector
 import ru.omyagkov.ExampleObject
 import ru.omyagkov.external.kafka.example.config.KafkaConfig
 
@@ -35,31 +37,18 @@ class FlinkStreamletExample extends FlinkStreamlet with KafkaConfig {
               context.streamletConfig.getString(kafkaConsumerGroupId.key)
             )
           )
-        )
-//      val externalStreamIn: DataStream[ExampleObject] = streamEnv
-//        .addSource(
-//          flinkKafkaConsumerSource[ExampleObject](
-//            setKafkaConsumerProperty(
-//              context.streamletConfig.getString(kafkaBootstrapServers.key),
-//              context.streamletConfig.getString(kafkaConsumerGroupId.key)
-//            ),
-//            context.streamletConfig.getString(kafkaTopicConsumer.key),
-//            context.streamletConfig.getBoolean(enableStartFromEarliestKafkaPosition.key)
-//          )
-//        )
-        val newMap = externalStreamIn.map(
+        ).map(
           obj =>
-            if (obj.equalsIgnoreCase("bbb")) {
-              null
-            } else
-              new ExampleObject(obj)
+
+            new ExampleObject(obj)
         )
-        newMap.print("from consumer")
+
         val generate =
           streamEnv.fromElements(ExampleObject("one"), ExampleObject("two"))
         //  generate.print("to producer")
-        newMap
-          .union(generate)
+        externalStreamIn
+          .connect(generate)
+          .process(new Coprocc())
           .addSink(
             flinkKafkaProducerSource[ExampleObject](
               setKafkaProducerProperty(
@@ -69,7 +58,7 @@ class FlinkStreamletExample extends FlinkStreamlet with KafkaConfig {
             )
           )
 
-        writeStream(exampleObject, newMap)
+        writeStream(exampleObject, externalStreamIn)
 
       }
     }
